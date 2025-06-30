@@ -3,9 +3,12 @@ import catchAsync from "../utils/catchAsync.js";
 import sendResponse from "../utils/sendResponse.js";
 import { checkAuthority } from "./authController.js";
 
-const createOne = (Model) =>
+const createOne = (Model, options = {}) =>
   catchAsync(async (req, res, next) => {
     const doc = await Model.create(req.validatedBody);
+
+    if (options.afterCreate) return options.afterCreate(doc, req, res, next);
+
     sendResponse(res, 201, doc, null, `${Model.modelName} Created Successfully!`);
   });
 
@@ -30,7 +33,7 @@ const getAll = (Model, options) =>
 
 const updateOne = (Model) =>
   catchAsync(async (req, res, next) => {
-    const doc = await Model.findByIdAndUpdate(req.params.id, validatedBody, {
+    const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });

@@ -7,10 +7,47 @@ import sendResponse from "../utils/sendResponse.js";
 import Session from "./../models/sessionModel.js";
 import { checkAuthority } from "./authController.js";
 import factory from "./handlerFactory.js";
+import Stripe from "stripe";
 
 const getAllSessions = factory.getAll(Session, { filterByUser: true });
 const getSession = factory.getOne(Session);
-const createSession = factory.createOne(Session);
+const createSession = factory.createOne(Session, {
+  afterCreate: async (session, req, res, next) => {
+    const doctor = await Doctor.findById(session.doctor);
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+    const line_items = [
+      {
+        price_data: {
+          currency: "egp",
+          unit_amount: Math.round((session.duration === 30 ? doctor.halfHourlyRate : doctor.hourlyRate) * 100),
+          product_data: {
+            name: `Therapy Session ${session.duration} Minutes.`,
+            description: doctor.name,
+          },
+        },
+        quantity: 1,
+      },
+    ];
+
+    const checkoutSession = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "payment",
+      success_url: `http://127.0.0.1/api/v1/sessions/success?sessionId=${session._id}`,
+      cancel_url: `http://127.0.0.1/api/v1/sessions/cancel`,
+      client_reference_id: session._id.toString(),
+      customer_email: req.user.email,
+      line_items,
+      metadata: {
+        sessionId: session._id.toString(),
+        userId: req.user._id.toString(),
+        doctorId: doctor._id.toString(),
+      },
+    });
+
+    sendResponse(res, 200, checkoutSession);
+  },
+});
 const updateSession = factory.updateOne(Session);
 const deleteSession = factory.deleteOne(Session);
 const deleteAllSessions = factory.deleteAll(Session);
