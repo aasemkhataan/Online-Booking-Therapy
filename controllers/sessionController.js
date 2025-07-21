@@ -178,7 +178,6 @@ Shezlong Support Team `;
   sendResponse(res, 200, session, null, "Session cancelled successfully");
 });
 
-const checkoutSession = catchAsync(async (req, res, next) => {});
 export default {
   getAllSessions,
   getSession,
