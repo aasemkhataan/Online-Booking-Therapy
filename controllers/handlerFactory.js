@@ -2,32 +2,34 @@ import APIFeatures from "../utils/apiFeatures.js";
 import catchAsync from "../utils/catchAsync.js";
 import sendResponse from "../utils/sendResponse.js";
 import { checkAuthority } from "./authController.js";
-
-const createOne = (Model, options = {}) =>
+import AppError from "../utils/appError.js";
+const createOne = (Model, hooks = {}) =>
   catchAsync(async (req, res, next) => {
-    const doc = await Model.create(req.validatedBody);
+    if (hooks.beforeCreate) req.validatedBody = await hooks.beforeCreate(req, res, next);
+    console.log(req.validatedBody);
+    let doc = await Model.create(req.validatedBody);
 
-    if (options.afterCreate) return options.afterCreate(doc, req, res, next);
+    if (hooks.afterCreate) doc = await hooks.afterCreate(doc, req, res, next);
 
     sendResponse(res, 201, doc, null, `${Model.modelName} Created Successfully!`);
   });
 
-const getOne = (Model) =>
+const getOne = (Model, filter = {}) =>
   catchAsync(async (req, res, next) => {
-    const doc = await Model.findById(req.params.id);
-
+    const doc = await Model.findOne({ _id: req.params.id, ...filter });
+    console.log(filter);
     if (!doc) return next(new AppError(404, `No ${Model.modelName} Found With This ID.`));
 
     sendResponse(res, 200, doc, null);
   });
 
-const getAll = (Model, options) =>
+const getAll = (Model, filter = {}) =>
   catchAsync(async (req, res, next) => {
-    let filter = options?.filterByUser ? { user: req.user._id } : null;
-
     const features = new APIFeatures(Model.find(filter), req.query).sort().filter().limitFields().paginate();
 
     const docs = await features.mongooseQuery;
+    console.log(docs);
+
     sendResponse(res, 200, docs, null);
   });
 

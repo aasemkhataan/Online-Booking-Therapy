@@ -7,7 +7,7 @@ const googleOptions = {
   callbackURL: "http://127.0.0.1:3000/api/v1/auth/google/callback",
   scope: ["profile", "email"],
 };
-console.log(process.env.GOOGLE_CLIENT_ID);
+
 const verifyCallback = (accessToken, refreshToken, profile, done) => {
   try {
     const userData = {
@@ -16,7 +16,6 @@ const verifyCallback = (accessToken, refreshToken, profile, done) => {
       photo: profile._json.picture,
       googleId: profile.id,
     };
-    console.log(userData);
 
     done(null, userData);
   } catch (error) {

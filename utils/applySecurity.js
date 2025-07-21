@@ -7,7 +7,7 @@ import rateLimit from "express-rate-limit";
 export default function applySecurity(app) {
   app.use(helmet());
 
-  app.use(hpp({ whitelist: [""] }));
+  app.use(hpp());
 
   app.use(mongoSanitize());
 

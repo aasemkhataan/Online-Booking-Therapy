@@ -1,17 +1,20 @@
-const sendResponse = (res, statusCode, data, token, message) => {
+const sendResponse = (res, statusCode, data, token, message, isError) => {
   const response = {};
 
   if (Array.isArray(data)) response.results = data.length;
-  response.status = `${statusCode}`.startsWith("2") ? "success" : "fail";
-  if (response.status === "success" && data) response.data = data;
-  if (response.status === "fail" && data) {
-    response.errors = {
-      message: data.message,
-      ...data,
-    };
+
+  if (isError) {
+    if (`${statusCode}`.startsWith("4")) response.status = "fail";
+    else response.status = "error";
+
+    response.error = data;
+  } else {
+    response.status = "success";
+    response.data = data;
   }
-  if (token) response.token = token;
   if (message) response.message = message;
+
+  if (token) response.token = token;
   res.status(statusCode).json(response);
 };
 

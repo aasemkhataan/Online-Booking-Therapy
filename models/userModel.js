@@ -6,12 +6,13 @@ const userSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, "Please Provide Your Name"],
+      unique: [true, "this name is used"],
     },
     email: {
       type: String,
       validate: validator.isEmail,
       required: [true, "Please Provide Your Email"],
-      unique: [true, "this email is used, please login"],
+      unique: [true, "this email is used, if you can't access your account please ask a password reset"],
     },
     password: {
       type: String,
@@ -48,6 +49,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "user",
       enum: ["admin", "user", "doctor"],
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
     },
     lastLogin: { type: Date },
     passwordResetToken: String,
@@ -89,6 +94,16 @@ userSchema.pre(/^find/, function (next) {
   this.populate("sessions");
   next();
 });
+
+userSchema.methods.createResetToken = async function () {
+  const token = crypto.randomBytes(32).toString("hex");
+  const encryptedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  this.passwordResetToken = encryptedToken;
+  this.passwordResetTokenExpiresIn = Date.now() + 10 * 60 * 1000;
+  await this.save({ validateBeforeSave: false });
+  return token;
+};
 userSchema.methods.comparePassword = async function (inputedPass) {
   return bcrypt.compare(inputedPass, this.password);
 };

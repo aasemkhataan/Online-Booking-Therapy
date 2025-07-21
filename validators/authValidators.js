@@ -1,5 +1,6 @@
 import { z } from "zod";
 import sendResponse from "../utils/sendResponse.js";
+import validateBody from "../utils/validateBody.js";
 
 const baseSignupSchema = z.object({
   name: z.string({ required_error: "Name is required" }).min(10),
@@ -29,47 +30,10 @@ const signupDoctorSchema = baseSignupSchema
     path: ["passwordConfirm"],
   });
 
-const validateSignup = (req, res, next) => {
-  const role = req.query?.role === "doctor" ? "doctor" : "user";
-  const schema = role === "doctor" ? signupDoctorSchema : signupUserSchema;
-
-  let result = schema.safeParse(req.body);
-
-  if (!result.success) {
-    const errors = result.error.errors.map((err) => ({
-      field: err.path,
-      message: err.message,
-    }));
-
-    return res.status(400).json({
-      status: "fail",
-      errors,
-    });
-  }
-
-  req.validatedBody = result.data;
-  req.validatedBody.role = role;
-  next();
-};
-
 const loginSchema = z.object({
   email: z.string().email("Invalid Email Format."),
   password: z.string().min(8),
 });
-
-const validateLogin = (req, res, next) => {
-  const result = loginSchema.safeParse(req.body);
-
-  if (!result.success) {
-    const errors = result.error.errors.map((err) => ({
-      field: err.path,
-      message: err.message,
-    }));
-    return sendResponse(res, 400, errors);
-  }
-  req.validatedBody = result.data;
-  next();
-};
 
 const resetPasswordSchema = z
   .object({
@@ -80,15 +44,11 @@ const resetPasswordSchema = z
     message: `Passwords Doesn't Match!`,
     path: ["password Confirm"],
   });
-const validateResetPassword = (req, res, next) => {
-  const result = resetPasswordSchema.safeParse(req.body);
-  if (!result.success) {
-    // sendResponse(res, 400, result.error);
-    const errors = result.error.errors.map((err) => ({ field: err.path, message: err.message }));
-    sendResponse(res, 400, errors);
-  }
-  req.validatedBody = result.data;
-  next();
+
+const validateSignup = (req, res, next) => {
+  req.query?.role === "doctor" ? validateBody(signupDoctorSchema) : validateBody(signupUserSchema);
 };
+const validateLogin = validateBody(loginSchema);
+const validateResetPassword = validateBody(resetPasswordSchema);
 
 export default { validateSignup, validateLogin, validateResetPassword };

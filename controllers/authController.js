@@ -1,5 +1,5 @@
 import User from "./../models/userModel.js";
-import { jwtVerify, SignJWT } from "jose";
+import { jwtVerify } from "jose";
 import jwt from "jsonwebtoken";
 import sendResponse from "./../utils/sendResponse.js";
 import AppError from "./../utils/appError.js";
@@ -17,21 +17,10 @@ const createToken = async (user) => {
   return token;
 };
 
-const createResetToken = async (user) => {
-  const token = crypto.randomBytes(32).toString("hex");
-  const encryptedToken = crypto.createHash("sha256").update(token).digest("hex");
-
-  user.passwordResetToken = encryptedToken;
-  user.passwordResetTokenExpiresIn = Date.now() + 10 * 60 * 1000;
-  await user.save({ validateBeforeSave: false });
-  return token;
-};
-
 const signup = catchAsync(async (req, res, next) => {
-  const role = req.query.role || "user";
   let user;
-  if (role === "doctor") user = await Doctor.create(req.validatedBody);
-  else user = await User.create(req.validatedBody);
+
+  req.query?.role === "doctor" ? (user = await Doctor.create(req.validatedBody)) : (user = await User.create(req.validatedBody));
 
   const token = await createToken(user);
   user.password = undefined;
@@ -48,7 +37,7 @@ const login = catchAsync(async (req, res, next) => {
   const isCorrect = await user.comparePassword(req.validatedBody.password);
   if (!isCorrect) {
     const message = process.env.NODE_ENV === "development" ? "Password is Not Correct" : "incorrect password or email";
-    return sendResponse(res, 404, null, null, message);
+    return sendResponse(res, 404, null, null, message, true);
   }
 
   const token = await createToken(user);
@@ -63,7 +52,7 @@ const fogotPassword = catchAsync(async (req, res, next) => {
   const user = await User.findOne({ email });
   if (!user) return next(new AppError(404, "This User is not exist"));
 
-  const resetToken = await createResetToken(user);
+  const resetToken = await user.createResetToken();
   const URL = `${req.protocol}://${req.get("host")}/api/v1/auth/resetPassword/${resetToken}`;
   const message = `forgot your password?\nsubmit a POST request to this URL: ${URL}`;
   try {
@@ -73,7 +62,7 @@ const fogotPassword = catchAsync(async (req, res, next) => {
     user.passwordResetTokenExpiresIn = undefined;
     await user.save({ validateBeforeSave: false });
 
-    sendResponse(res, 500, null, null, "something went wrong sending email, try again later");
+    sendResponse(res, 500, null, null, "something went wrong sending email, try again later", true);
   }
 
   sendResponse(res, 200, null, null, "reset token sent to your email");
@@ -110,6 +99,7 @@ export const protect = catchAsync(async (req, res, next) => {
 
   const jwtSecret = new TextEncoder().encode(process.env.JWT_SECRET);
   const { payload: decoded } = await jwtVerify(token, jwtSecret);
+
   const user = await User.findById(decoded.id).select("+password");
   if (!user) return next(new AppError(401, "User Belonging to This Token is no Longer Exists."));
 
@@ -121,7 +111,6 @@ export const protect = catchAsync(async (req, res, next) => {
 export const restrictTo = (...roles) =>
   catchAsync(async (req, res, next) => {
     if (!roles.includes(req.user.role)) return next(new AppError(403, "You Do not have permission to perform this action"));
-
     next();
   });
 
@@ -134,7 +123,6 @@ const googleOauthHandler = catchAsync(async (req, res, next) => {
     await user.save({ validateBeforeSave: false });
   }
   if (!user) user = await User.create(req.user);
-  console.log(user);
   const token = await createToken(user);
   sendResponse(res, 200, user, token);
 });

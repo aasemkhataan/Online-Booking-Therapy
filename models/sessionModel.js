@@ -17,8 +17,12 @@ const sessionSchema = new mongoose.Schema(
     paymentMethod: {
       type: String,
       enum: ["card"],
-      defualt: "card",
+      default: "card",
     },
+    checkoutSession: {
+      type: Object,
+    },
+    checkoutSessionExpiresIn: Date,
     status: {
       type: String,
       default: "pending",

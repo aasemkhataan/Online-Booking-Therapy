@@ -12,6 +12,26 @@ router.use(protect);
 // Users
 
 router.route("/users").get(userController.getAllUsers);
-router.route("/doctors").get(doctorController.getAllDoctors);
+router.route("/users/:id").get(userController.getUser);
+
+// Doctors
+
+router.route("/doctors").get(doctorController.getAllDoctorsAdmin).delete(doctorController.deleteAllDoctors);
+router.patch("/doctors/:id/approve", doctorController.approveDoctor);
+router.patch("/doctors/:id/suspend", doctorController.suspendDoctor);
+
+router
+  .route("/doctors/:id")
+  .get(doctorController.getDoctorAdmin)
+  .patch(doctorController.updateDoctor)
+  .delete(doctorController.deleteDoctor);
+
+// Sessions
 router.route("/sessions").get(sessionController.getAllSessions).delete(sessionController.deleteAllSessions);
+router
+  .route("/sessions/:id")
+  .get(sessionController.getSession)
+  .patch(sessionController.updateSession)
+  .delete(sessionController.deleteSession);
+
 export default router;
