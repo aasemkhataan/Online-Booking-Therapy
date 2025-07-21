@@ -5,9 +5,11 @@ import authRouter from "./routes/authRoutes.js";
 import adminRouter from "./routes/adminRoutes.js";
 import doctorRouter from "./routes/doctorRoutes.js";
 import sessionRouter from "./routes/sessionRoutes.js";
+import availabilityRouter from "./routes/availabilityRoutes.js";
 import globalErrorHandler from "./controllers/errorController.js";
 import passport from "passport";
 import applySecurity from "./utils/applySecurity.js";
+
 import { webhookHandler } from "./controllers/sessionController.js";
 const strategyModule = import("./config/passportGoogleStrategy.js");
 
@@ -25,6 +27,7 @@ app.use(passport.initialize());
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/doctors", doctorRouter);
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/availability", availabilityRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/sessions", sessionRouter);
 

@@ -12,25 +12,6 @@ const updateDoctor = factory.updateOne(Doctor);
 const deleteDoctor = factory.deleteOne(Doctor);
 const deleteAllDoctors = factory.deleteAll(Doctor);
 
-export const createAvailability = catchAsync(async (req, res, next) => {
-  const { startStr, endStr, duration } = req.validatedBody;
-
-  const doctor = await Doctor.findById(req.user._id);
-  if (!doctor) return next(new AppError(404, "Doctor Not Found"));
-
-  const newSlots = Doctor.generateSlots(startStr, endStr, duration);
-
-  const filtered = newSlots.filter((slot) => {
-    return !doctor.availability.find((av) => new Date(av.startsAt).getTime() === new Date(slot.startsAt).getTime());
-  });
-  doctor.availability.push(...filtered);
-  await doctor.save({ validateBeforeSave: false });
-
-  if (!filtered.length) return next(new AppError(400, "All slots are already exist"));
-
-  sendResponse(res, 201, doctor, null, `${filtered.length} slot(s) added successfully`);
-});
-
 const approveDoctor = catchAsync(async (req, res, next) => {
   const doctor = await Doctor.findByIdAndUpdate(
     req.params.id,

@@ -89,6 +89,16 @@ doctorSchema.statics.generateSlots = function (startStr, endStr, duration) {
   const end = new Date(endStr);
   const slots = [];
 
+  const minutes = start.getMinutes();
+  if (minutes < 30) {
+    start.setMinutes(30, 0, 0);
+  } else if (minutes > 30) {
+    start.setHours(start.getHours() + 1);
+    start.setMinutes(0, 0, 0);
+  } else {
+    start.setSeconds(0, 0);
+  }
+
   while (start < end) {
     slots.push({
       day: start.toLocaleDateString("en-Us", { weekday: "long" }),

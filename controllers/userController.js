@@ -6,7 +6,6 @@ import factory from "./handlerFactory.js";
 export const injectMe = (req, res, next) => {
   req.params.id = req.user._id;
   req.body.user = req.user._id;
-  req.validatedBody.user = req.user._id;
 
   next();
 };

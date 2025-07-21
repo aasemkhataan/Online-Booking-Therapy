@@ -3,6 +3,7 @@ import catchAsync from "../utils/catchAsync.js";
 import sendResponse from "../utils/sendResponse.js";
 import { checkAuthority } from "./authController.js";
 import AppError from "../utils/appError.js";
+
 const createOne = (Model, hooks = {}) =>
   catchAsync(async (req, res, next) => {
     if (hooks.beforeCreate) req.validatedBody = await hooks.beforeCreate(req, res, next);

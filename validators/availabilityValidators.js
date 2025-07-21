@@ -10,8 +10,19 @@ const availabilityDaySchema = z.object({
   }),
 });
 
-export const availabilityDayValidation = validateBody(availabilityDaySchema);
+const addSlotSchema = z.array(
+  z.object({
+    day: z.enum(["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]),
+    startsAt: z.string({ required_error: "please provide slot start time" }),
+    duration: z
+      .number("please choose slot duration 30 or 60 minutes")
+      .refine((val) => val === 30 || val === 60, { message: "you can only choose between 30 or 60 minutes" }),
+  }),
+);
 
+export const availabilityDayValidation = validateBody(availabilityDaySchema);
+export const addSlots = validateBody(addSlotSchema);
 export default {
   availabilityDayValidation,
+  addSlots,
 };

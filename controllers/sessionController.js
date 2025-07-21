@@ -34,6 +34,7 @@ const beforeCreate = async (req, res, next) => {
 
   req.validatedBody.startsAt = slot.startsAt;
   req.validatedBody.duration = slot.duration;
+  req.validatedBody.user = req.user._id;
 
   req.doctor = doctor;
   req.slot = slot;
@@ -117,7 +118,7 @@ export const webhookHandler = catchAsync(async (req, res, next) => {
 
     const doctor = await Doctor.findById(stripeSession.metadata.doctorId);
     const slot = doctor.availability.find((av) => av._id.toString() === stripeSession.metadata.slotId);
-    console.log(slot);
+
     slot.isReserved = true;
     await doctor.save({ validateBeforeSave: false });
 
