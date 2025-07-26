@@ -10,6 +10,10 @@ const sessionSchema = new mongoose.Schema(
       type: Date,
       required: [true, "please provide start date of the session"],
     },
+    slot: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Doctor.availability",
+    },
     isPaid: {
       type: Boolean,
       default: false,
@@ -19,10 +23,6 @@ const sessionSchema = new mongoose.Schema(
       enum: ["card"],
       default: "card",
     },
-    checkoutSession: {
-      type: Object,
-    },
-    checkoutSessionExpiresIn: Date,
     status: {
       type: String,
       default: "pending",

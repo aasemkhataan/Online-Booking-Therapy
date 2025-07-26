@@ -8,9 +8,9 @@ const updateMeSchema = z.object({
 });
 
 const updateMeDoctorSchema = updateMeSchema.extend({
-  profession: z.enum(["psychiatrist", "therapist"]),
+  profession: z.enum(["psychiatrist", "therapist"]).optional(),
   subSpecialty: z.enum(["CBT", "Addiction", "Marriage Counseling", "Child Therapy", "General Therapy"]).optional(),
-  license: z.array(z.string().min(1)),
+  license: z.array(z.string().min(1)).optional(),
   treatedDisorders: z
     .array(
       z.enum([

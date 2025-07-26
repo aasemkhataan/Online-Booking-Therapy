@@ -7,7 +7,7 @@ import AppError from "../utils/appError.js";
 const createOne = (Model, hooks = {}) =>
   catchAsync(async (req, res, next) => {
     if (hooks.beforeCreate) req.validatedBody = await hooks.beforeCreate(req, res, next);
-    console.log(req.validatedBody);
+
     let doc = await Model.create(req.validatedBody);
 
     if (hooks.afterCreate) doc = await hooks.afterCreate(doc, req, res, next);
@@ -29,7 +29,6 @@ const getAll = (Model, filter = {}) =>
     const features = new APIFeatures(Model.find(filter), req.query).sort().filter().limitFields().paginate();
 
     const docs = await features.mongooseQuery;
-    console.log(docs);
 
     sendResponse(res, 200, docs, null);
   });

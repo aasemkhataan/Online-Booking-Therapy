@@ -5,7 +5,7 @@ import validateBody from "../utils/validateBody.js";
 
 const createSessionSchema = z.object({
   slotId: z.string({ required_error: "please select time slot" }),
-  doctor: z.string({ required_error: "a session must belong to a doctor" }),
+  doctorId: z.string({ required_error: "a session must belong to a doctor" }),
 });
 
 const createSessionValidation = validateBody(createSessionSchema);

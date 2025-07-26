@@ -10,9 +10,11 @@ router.use(protect);
 router
   .route("/")
   .get(controllers.getAllSessions)
-  .post(validators.createSessionValidation, injectMe, controllers.createSession)
+  .post(validators.createSessionValidation, injectMe, controllers.createCheckoutSession)
   .delete(controllers.deleteAllSessions);
 
 router.route("/:id").get(controllers.getSession).patch(controllers.updateSession);
-router.route("/:id/cancel").patch(controllers.cancelSession);
+router.patch("/:id/cancel", controllers.cancelSession);
+router.patch("/:id/reschedule", controllers.rescheduleSession);
+
 export default router;

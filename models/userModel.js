@@ -80,16 +80,6 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-userSchema.methods.createResetToken = async (user) => {
-  const token = crypto.randomBytes(32).toString("hex");
-  const encryptedToken = crypto.createHash("sha256").update(token).digest("hex");
-
-  user.passwordResetToken = encryptedToken;
-  user.passwordResetTokenExpiresIn = Date.now() + 10 * 60 * 1000;
-  await user.save({ validateBeforeSave: false });
-  return token;
-};
-
 userSchema.pre(/^find/, function (next) {
   this.populate("sessions");
   next();
